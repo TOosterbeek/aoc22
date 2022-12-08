@@ -1,79 +1,69 @@
 from util import readInput
+# A = ROCK = 1p
+# B = PAPER = 2p
+# C = SCISSORS = 3p
 
-#Disgusting code coming up, brace, brace, brace
+# X = ROCK = 1p
+# Y = PAPER = 2p
+# Z = SCISSORS 3p
 
-# Bunch of dictionaries because fuck it
-rules = {
+alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+# key loses from value
+losesFrom = {
     'A': 'Y',
     'B': 'Z',
-    'C': 'X',
-}  # Only really works for the first solution
+    'C': 'X'
+}
 
-losing = {
+# key loses from value
+losesFromSimplified = {
     'A': 'B',
     'B': 'C',
     'C': 'A',
 }
 
-points = {
-    'X': 1,
-    'Y': 2,
-    'Z': 3
-}
 
-pointsInbound = {
-    'A': 1,
-    'B': 2,
-    'C': 3,
-}
+def totalScore_1(data):
+    score = 0
 
-optionMap = {
-    'A': 'X',
-    'B': 'Y',
-    'C': 'Z'
-}
-
-convertTable = {
-    'A': 'X',
-    'B': 'Y',
-    'C': 'Z',
-}
-
-
-def calculateScore(data):
-    totalWinPoints = 0
     for line in data:
-        inbound, outbound = line.strip().split(' ')
+        incoming, outgoing = line.strip().split(' ')
 
-        winPoints = 0
-        if (optionMap[inbound] == outbound):
-            winPoints = 3
-        elif rules[inbound] == outbound:
-            winPoints = 6
+        index = 25 - (2 - alphabet.index(incoming))  # ABC -> XYZ
+        if (losesFrom[incoming] == outgoing):
+            score += 6
+        elif (alphabet[index] == outgoing):
+            score += 3
 
-        totalWinPoints += points[outbound] + winPoints
+        indexBackwards = (alphabet.index(outgoing) + 3) % 26  # XYZ->ABC
+        score += indexBackwards + 1
 
-    return totalWinPoints
+    return score
 
 
-def calculateScore2(data):
-    totalWinPoints = 0
+def totalScore_2(data):
+    score = 0
+
+    invertedMap = inv_map = {v: k for k, v in losesFromSimplified.items()}
+
     for line in data:
-        inbound, result = line.strip().split(' ')
-        
-        winPoints = 0
+        incoming, result = line.strip().split()
+
+        if (result == 'X'):
+            # Lose
+            losingAnswer = invertedMap[incoming]
+            score += alphabet.index(losingAnswer) + 1
         if (result == 'Y'):
-            winPoints = 3 + points[convertTable[inbound]]
-        elif (result == 'Z'):
-            winPoints = 6 + points[rules[inbound]]
-        else:
-            winPoints = pointsInbound[losing[inbound]]
+            # Draw
+            score += 3 + alphabet.index(incoming) + 1
+        if (result == 'Z'):
+            # Win
+            score += 6 + alphabet.index(losesFromSimplified[incoming]) + 1
 
-        totalWinPoints += winPoints
-
-    return totalWinPoints
+    return score
 
 
 data = readInput('data/2.txt')
-print(calculateScore(data))
-print(calculateScore2(data))
+print(totalScore_1(data))
+print(totalScore_2(data))
